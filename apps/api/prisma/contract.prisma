@@ -1,0 +1,166 @@
+// use prisma-8
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum Role {
+  OWNER
+  MANAGER
+  DEVELOPER
+  VIEWER
+}
+
+enum SessionStatus {
+  IDLE
+  RUNNING
+  STOPPED
+}
+
+enum MessageRole {
+  USER
+  AGENT
+  SYSTEM
+}
+
+enum FileChangeStatus {
+  PENDING
+  COMMITTED
+}
+
+enum EnvVarScope {
+  SANDBOX
+  PROD
+}
+
+// -----------------------------------------------------------------------------
+// MODELS
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  name          String?
+  githubId      String?      @unique // For GitHub OAuth
+  avatarUrl     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     temporal.updatedAt()
+
+  memberships   Membership[]
+}
+
+model Organization {
+  id            String       @id @default(uuid())
+  name          String
+  slug          String       @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     temporal.updatedAt()
+
+  memberships   Membership[]
+  projects      Project[]
+  integrations  Integration[]
+}
+
+model Membership {
+  id             String       @id @default(uuid())
+  userId         String
+  organizationId String
+  role           Role         @default(VIEWER)
+  createdAt      DateTime     @default(now())
+  updatedAt      temporal.updatedAt()
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+model Integration {
+  id             String       @id @default(uuid())
+  organizationId String
+  provider       String       // e.g., "github"
+  installationId String       // GitHub App installation ID
+  config         Json?        // Additional provider config
+  createdAt      DateTime     @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id               String            @id @default(uuid())
+  organizationId   String
+  name             String
+  description      String?
+  repositoryUrl    String?           // Linked GitHub repo
+  techStack        Json?             // Techstack config as JSON
+  createdAt        DateTime          @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sandboxTemplates SandboxTemplate[]
+  sessions         Session[]
+  envVars          EnvVar[]
+}
+
+model SandboxTemplate {
+  id          String   @id @default(uuid())
+  projectId   String
+  baseImage   String   // e.g., "e2b/node:18"
+  services    Json?    // e.g., required DBs, Redis, etc.
+  envSchema   Json?    // Expected environment variables shape
+  createdAt   DateTime @default(now())
+  updatedAt   temporal.updatedAt()
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id          String        @id @default(uuid())
+  projectId   String
+  sandboxId   String?       // E2B sandbox instance ID
+  status      SessionStatus @default(IDLE)
+  createdAt   DateTime      @default(now())
+  updatedAt   temporal.updatedAt()
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  messages    Message[]
+  fileChanges FileChange[]
+}
+
+model Message {
+  id          String      @id @default(uuid())
+  sessionId   String
+  role        MessageRole
+  summaryText String
+  rawTrace    Json?       // Full LLM interaction/trace
+  createdAt   DateTime    @default(now())
+
+  session     Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model FileChange {
+  id          String           @id @default(uuid())
+  sessionId   String
+  filePath    String
+  diff        String
+  status      FileChangeStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   temporal.updatedAt()
+
+  session     Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model EnvVar {
+  id          String      @id @default(uuid())
+  projectId   String
+  key         String
+  value       String      // Encrypted value
+  scope       EnvVarScope @default(SANDBOX)
+  createdAt   DateTime    @default(now())
+  updatedAt   temporal.updatedAt()
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, key, scope])
+}

@@ -1,0 +1,28 @@
+{
+  "name": "ai-agent-platform",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3",
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "npm@10.8.2",
+  "dependencies": {
+    "@inquirer/core": "^12.0.3",
+    "ajv": "^8.20.0",
+    "chardet": "^2.2.0"
+  }
+}
