@@ -44,7 +44,7 @@ model User {
   githubId      String?      @unique // For GitHub OAuth
   avatarUrl     String?
   createdAt     DateTime     @default(now())
-  updatedAt     temporal.updatedAt()
+  updatedAt     DateTime
 
   memberships   Membership[]
 }
@@ -54,7 +54,7 @@ model Organization {
   name          String
   slug          String       @unique
   createdAt     DateTime     @default(now())
-  updatedAt     temporal.updatedAt()
+  updatedAt     DateTime     @updatedAt
 
   memberships   Membership[]
   projects      Project[]

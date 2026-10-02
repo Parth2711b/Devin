@@ -28,8 +28,11 @@
     "@prisma/client": "^7.10.0",
     "@prisma/orm-postgres": "^8.0.0-rc.12",
     "dotenv": "^18.0.4",
+    "get-intrinsic": "^1.3.0",
+    "object-inspect": "^1.13.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "side-channel": "^1.1.1",
     "temporal-polyfill": "^1.0.5"
   },
   "devDependencies": {
