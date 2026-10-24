@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Calc - Glitch Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        calcBg: '#0b0c10',
+                        calcCard: '#1f2833',
+                        calcDisplay: '#0b0c10',
+                        accent: '#66fcf1',
+                        accentHover: '#45a29e',
+                    },
+                    boxShadow: {
+                        'glitch': '0 0 20px rgba(102, 252, 241, 0.2), inset 0 0 15px rgba(31, 40, 51, 0.8)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #0b0c10;
+            background-image: 
+                radial-gradient(at 50% 50%, rgba(102, 252, 241, 0.05) 0px, transparent 80%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 100%, 100% 3px, 3px 100%;
+            min-height: 100vh;
+        }
+        .display-font {
+            font-family: 'VT323', monospace;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0c10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #45a29e;
+            border-radius: 9999px;
+        }
+        .panel-card {
+            background-color: #1f2833;
+            border: 1px solid #45a29e;
+            box-shadow: 0 0 15px rgba(69, 165, 158, 0.15);
+        }
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+        
+        /* CRT Scanline & Glitch Effects */
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        .glitching {
+            animation: glitch-anim 0.2s infinite;
+            filter: hue-rotate(90deg);
+        }
+        
+        .matrix-text {
+            color: #66fcf1;
+            text-shadow: 0 0 8px rgba(102, 252, 241, 0.6);
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 min-h-screen selection:bg-[#66fcf1] selection:text-[#0b0c10]">
+
+    <!-- Top Navigation / Header -->
+    <header id="mainHeader" class="w-full max-w-4xl flex items-center justify-between px-5 py-3 mb-4 panel-card rounded-xl">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-lg bg-[#45a29e] flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-terminal text-[#0b0c10] text-base font-bold" id="headerIcon"></i>
+            </div>
+            <div>
+                <h1 id="headerTitle" class="font-bold text-base text-[#66fcf1] tracking-wider uppercase">GLITCH_CALC v3.03</h1>
+                <p id="headerSubtitle" class="text-[11px] text-[#c5c6c7] tracking-widest">ANOMALY CALCULATION MATRIX</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="chaosToggleBtn" title="Trigger Manual Glitch" class="px-3 py-1.5 rounded-lg bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] border border-[#45a29e] transition btn-press text-xs font-bold tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-bolt"></i> <span id="chaosBtnText">CHAOS: OFF</span>
+            </button>
+            <button id="soundToggleBtn" title="Toggle Audio Feedback" class="p-2 rounded-lg bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] border border-[#45a29e] transition btn-press text-xs">
+                <i class="fa-solid fa-volume-high text-[#66fcf1]" id="soundIcon"></i>
+            </button>
+            <button id="helpBtn" title="Help / Manifest" class="p-2 rounded-lg bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] border border-[#45a29e] transition btn-press text-xs">
+                <i class="fa-solid fa-circle-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Grid Container -->
+    <main class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- Calculator Card (Left 8 Cols) -->
+        <div id="calcCard" class="lg:col-span-8 panel-card rounded-xl p-5 sm:p-6 flex flex-col justify-between">
+            
+            <!-- Mode Selector & Indicators -->
+            <div class="flex items-center justify-between mb-4 border-b border-[#45a29e]/40 pb-3">
+                <div class="flex bg-[#0b0c10] p-1 rounded-lg border border-[#45a29e]/60">
+                    <button data-mode="standard" class="calc-mode-btn px-3 py-1 rounded-md text-xs font-bold transition bg-[#45a29e] text-[#0b0c10]">Standard</button>
+                    <button data-mode="scientific" class="calc-mode-btn px-3 py-1 rounded-md text-xs font-bold text-[#c5c6c7] hover:text-[#66fcf1] transition">Scientific</button>
+                    <button data-mode="chaos" class="calc-mode-btn px-3 py-1 rounded-md text-xs font-bold text-rose-400 hover:text-rose-300 transition">Chaos</button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="angleModeBtn" class="px-2.5 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold text-xs rounded-lg border border-[#45a29e] transition btn-press">DEG</button>
+                    <span id="memIndicator" class="hidden px-2 py-0.5 bg-[#45a29e]/20 text-[#66fcf1] text-xs font-bold rounded border border-[#45a29e]">MEM</span>
+                </div>
+            </div>
+
+            <!-- Display Screen -->
+            <div id="displayBox" class="bg-[#0b0c10] rounded-lg p-4 mb-4 border border-[#45a29e] shadow-[inset_0_0_10px_rgba(102,252,241,0.15)] flex flex-col justify-end min-h-[110px] relative overflow-hidden">
+                <div id="matrixScanline" class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] pointer-events-none opacity-60"></div>
+                <div id="historyExpression" class="text-[#c5c6c7] text-xs sm:text-sm display-font h-6 overflow-x-auto whitespace-nowrap text-right tracking-widest"></div>
+                <div id="mainDisplay" class="text-[#66fcf1] text-4xl sm:text-5xl font-bold display-font overflow-x-auto whitespace-nowrap text-right mt-1 tracking-wider">0</div>
+                <div id="errorBanner" class="absolute top-2 left-3 text-xs text-rose-400 font-bold hidden flex items-center space-x-1 tracking-widest bg-[#0b0c10]/90 px-2 py-0.5 rounded border border-rose-500/50">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <span id="errorText">ANOMALY DETECTED</span>
+                </div>
+            </div>
+
+            <!-- Keypads Area -->
+            <div>
+                <!-- Standard Keypad -->
+                <div id="standardKeypad" class="grid grid-cols-4 gap-2 sm:gap-2.5">
+                    <button data-action="clear" class="btn-press bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-3 rounded-lg border border-rose-500/30 transition text-xs sm:text-sm tracking-wider">AC</button>
+                    <button data-action="delete" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-amber-400 font-bold py-3 rounded-lg border border-[#45a29e]/60 transition text-xs sm:text-sm"><i class="fa-solid fa-delete-left"></i></button>
+                    <button data-action="operator" data-val="%" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-3 rounded-lg border border-[#45a29e]/60 transition text-xs sm:text-sm">%</button>
+                    <button data-action="operator" data-val="/" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-3 rounded-lg border border-[#45a29e] transition text-sm sm:text-base">÷</button>
+
+                    <button data-action="number" data-val="7" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">7</button>
+                    <button data-action="number" data-val="8" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">8</button>
+                    <button data-action="number" data-val="9" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">9</button>
+                    <button data-action="operator" data-val="*" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-3 rounded-lg border border-[#45a29e] transition text-sm sm:text-base">×</button>
+
+                    <button data-action="number" data-val="4" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">4</button>
+                    <button data-action="number" data-val="5" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">5</button>
+                    <button data-action="number" data-val="6" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">6</button>
+                    <button data-action="operator" data-val="-" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-3 rounded-lg border border-[#45a29e] transition text-sm sm:text-base">-</button>
+
+                    <button data-action="number" data-val="1" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">1</button>
+                    <button data-action="number" data-val="2" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">2</button>
+                    <button data-action="number" data-val="3" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">3</button>
+                    <button data-action="operator" data-val="+" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-3 rounded-lg border border-[#45a29e] transition text-sm sm:text-base">+</button>
+
+                    <button data-action="number" data-val="0" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition col-span-2 text-lg display-font">0</button>
+                    <button data-action="decimal" data-val="." class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-3 rounded-lg border border-[#45a29e]/40 transition text-lg display-font">.</button>
+                    <button data-action="equals" class="btn-press bg-[#45a29e] hover:bg-[#66fcf1] text-[#0b0c10] font-bold py-3 rounded-lg shadow transition text-lg display-font">=</button>
+                </div>
+
+                <!-- Scientific Keypad -->
+                <div id="scientificKeypad" class="grid grid-cols-5 gap-2 hidden">
+                    <button data-action="func" data-val="sin(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">sin</button>
+                    <button data-action="func" data-val="cos(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">cos</button>
+                    <button data-action="func" data-val="tan(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">tan</button>
+                    <button data-action="operator" data-val="(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#c5c6c7] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">(</button>
+                    <button data-action="operator" data-val=")" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#c5c6c7] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">)</button>
+
+                    <button data-action="func" data-val="sqrt(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">√x</button>
+                    <button data-action="operator" data-val="^" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">x^y</button>
+                    <button data-action="func" data-val="log(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">log</button>
+                    <button data-action="func" data-val="ln(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">ln</button>
+                    <button data-action="constant" data-val="π" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-amber-300 font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">π</button>
+
+                    <button data-action="constant" data-val="e" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-amber-300 font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">e</button>
+                    <button data-action="func" data-val="abs(" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs">|x|</button>
+                    <button data-action="clear" class="btn-press bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold py-2.5 rounded-lg border border-rose-500/30 text-xs">AC</button>
+                    <button data-action="delete" class="btn-press bg-[#0b0c10] hover:bg-[#45a29e]/20 text-amber-400 font-bold py-2.5 rounded-lg border border-[#45a29e]/60 text-xs"><i class="fa-solid fa-delete-left"></i></button>
+                    <button data-action="equals" class="btn-press bg-[#45a29e] hover:bg-[#66fcf1] text-[#0b0c10] font-bold py-2.5 rounded-lg text-xs display-font">=</button>
+
+                    <div class="col-span-5 grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-[#45a29e]/40">
+                        <button data-action="number" data-val="7" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">7</button>
+                        <button data-action="number" data-val="8" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">8</button>
+                        <button data-action="number" data-val="9" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">9</button>
+                        <button data-action="operator" data-val="/" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-2 rounded-lg border border-[#45a29e] text-xs">÷</button>
+
+                        <button data-action="number" data-val="4" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">4</button>
+                        <button data-action="number" data-val="5" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">5</button>
+                        <button data-action="number" data-val="6" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">6</button>
+                        <button data-action="operator" data-val="*" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-2 rounded-lg border border-[#45a29e] text-xs">×</button>
+
+                        <button data-action="number" data-val="1" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">1</button>
+                        <button data-action="number" data-val="2" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">2</button>
+                        <button data-action="number" data-val="3" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">3</button>
+                        <button data-action="operator" data-val="-" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-2 rounded-lg border border-[#45a29e] text-xs">-</button>
+
+                        <button data-action="number" data-val="0" class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm col-span-2 display-font">0</button>
+                        <button data-action="decimal" data-val="." class="btn-press bg-[#0b0c10]/70 hover:bg-[#0b0c10] text-[#c5c6c7] font-bold py-2 rounded-lg border border-[#45a29e]/40 text-sm display-font">.</button>
+                        <button data-action="operator" data-val="+" class="btn-press bg-[#45a29e]/20 hover:bg-[#45a29e]/30 text-[#66fcf1] font-bold py-2 rounded-lg border border-[#45a29e] text-xs">+</button>
+                    </div>
+                </div>
+
+                <!-- Chaos Keypad -->
+                <div id="chaosKeypad" class="space-y-3 hidden">
+                    <div class="bg-[#0b0c10] p-4 rounded-lg border border-rose-500/50 text-center space-y-3">
+                        <div class="text-rose-400 font-bold text-sm tracking-widest"><i class="fa-solid fa-radiation mr-1"></i> CORRUPT CALCULATION MATRIX <i class="fa-solid fa-radiation ml-1"></i></div>
+                        <p class="text-xs text-[#c5c6c7]">Inject random entropy, bit-flips, math anomalies, and reality corruptions into calculations.</p>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <button id="injectEntropyBtn" class="btn-press bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold py-3 rounded-lg border border-rose-500/50 text-xs tracking-wider">
+                                <i class="fa-solid fa-viruses mr-1"></i> INJECT ENTROPY
+                            </button>
+                            <button id="voidBufferBtn" class="btn-press bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold py-3 rounded-lg border border-amber-500/50 text-xs tracking-wider">
+                                <i class="fa-solid fa-skull mr-1"></i> VOID BUFFER
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory Bar -->
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-[#45a29e]/40 text-xs">
+                <span class="text-[#c5c6c7] tracking-wider">MEMORY REGISTERS:</span>
+                <div class="flex space-x-1.5">
+                    <button data-mem="MC" class="px-2 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] rounded border border-[#45a29e]/60 transition btn-press font-bold">MC</button>
+                    <button data-mem="MR" class="px-2 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] rounded border border-[#45a29e]/60 transition btn-press font-bold">MR</button>
+                    <button data-mem="M+" class="px-2 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] rounded border border-[#45a29e]/60 transition btn-press font-bold">M+</button>
+                    <button data-mem="M-" class="px-2 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] rounded border border-[#45a29e]/60 transition btn-press font-bold">M-</button>
+                    <button data-mem="MS" class="px-2 py-1 bg-[#0b0c10] hover:bg-[#45a29e]/20 text-[#66fcf1] rounded border border-[#45a29e]/60 transition btn-press font-bold">MS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Sidebar (Right 4 Cols) -->
+        <div id="historyCard" class="lg:col-span-4 panel-card rounded-xl p-5 sm:p-6 flex flex-col justify-between h-[420px] lg:h-auto">
+            <div class="flex items-center justify-between mb-4 border-b border-[#45a29e]/40 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-[#66fcf1]"></i>
+                    <h2 class="font-bold text-sm sm:text-base text-[#66fcf1] tracking-wider">ANOMALY LOG</h2>
+                </div>
+                <button id="clearHistoryBtn" title="Purge Log" class="text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-2.5 py-1 rounded border border-rose-500/30 transition btn-press font-bold tracking-wider">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> PURGE
+                </button>
+            </div>
+
+            <div id="historyList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div class="text-center text-[#c5c6c7]/60 text-xs py-12 flex flex-col items-center justify-center space-y-2">
+                    <i class="fa-solid fa-microchip text-2xl text-[#45a29e]"></i>
+                    <p class="tracking-widest">NO ANOMALIES RECORDED</p>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-[#45a29e]/40 text-center">
+                <p class="text-[10px] text-[#c5c6c7]/70 tracking-widest">SEC_LEVEL: ROOT • SYSTEM STABLE</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="panel-card max-w-md w-full rounded-xl p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4 border-b border-[#45a29e]/40 pb-3">
+                <h3 class="font-bold text-base text-[#66fcf1] flex items-center space-x-2 tracking-wider">
+                    <i class="fa-solid fa-terminal text-[#45a29e]"></i> <span>SYSTEM MANIFEST</span>
+                </h3>
+                <button id="closeHelpModal" class="text-[#c5c6c7] hover:text-[#66fcf1] p-1 rounded"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs sm:text-sm text-[#c5c6c7]">
+                <div class="flex justify-between items-center py-1 border-b border-[#45a29e]/20">
+                    <span>Keypad Input</span>
+                    <span class="font-mono bg-[#0b0c10] px-2 py-0.5 rounded text-[#66fcf1]">0-9, Operators</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-[#45a29e]/20">
+                    <span>Chaos Mode</span>
+                    <span class="font-mono bg-[#0b0c10] px-2 py-0.5 rounded text-rose-400">Random Arithmetic Corruption</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-[#45a29e]/20">
+                    <span>Calculate</span>
+                    <span class="font-mono bg-[#0b0c10] px-2 py-0.5 rounded text-[#66fcf1]">Enter / =</span>
+                </div>
+                <div class="flex justify-between items-center py-1">
+                    <span>Emergency Reset</span>
+                    <span class="font-mono bg-[#0b0c10] px-2 py-0.5 rounded text-rose-400">Escape / AC</span>
+                </div>
+            </div>
+            <div class="mt-6 text-center">
+                <button id="closeHelpBtn" class="w-full py-2.5 rounded-lg bg-[#45a29e] hover:bg-[#66fcf1] text-[#0b0c10] font-bold text-xs sm:text-sm transition shadow">ACKNOWLEDGE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Calculator Engine -->
+    <script src="src/calculator.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const calc = new Calculator();
+
+            const mainDisplay = document.getElementById('mainDisplay');
+            const historyExpression = document.getElementById('historyExpression');
+            const errorBanner = document.getElementById('errorBanner');
+            const errorText = document.getElementById('errorText');
+            const angleModeBtn = document.getElementById('angleModeBtn');
+            const memIndicator = document.getElementById('memIndicator');
+            const historyList = document.getElementById('historyList');
+            const soundToggleBtn = document.getElementById('soundToggleBtn');
+            const soundIcon = document.getElementById('soundIcon');
+            const helpBtn = document.getElementById('helpBtn');
+            const helpModal = document.getElementById('helpModal');
+            const closeHelpModal = document.getElementById('closeHelpModal');
+            const closeHelpBtn = document.getElementById('closeHelpBtn');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const chaosToggleBtn = document.getElementById('chaosToggleBtn');
+            const chaosBtnText = document.getElementById('chaosBtnText');
+            const calcCard = document.getElementById('calcCard');
+            const mainHeader = document.getElementById('mainHeader');
+            const historyCard = document.getElementById('historyCard');
+
+            const modeBtns = document.querySelectorAll('.calc-mode-btn');
+            const standardKeypad = document.getElementById('standardKeypad');
+            const scientificKeypad = document.getElementById('scientificKeypad');
+            const chaosKeypad = document.getElementById('chaosKeypad');
+
+            let currentExpression = '';
+            let lastResult = null;
+            let soundEnabled = true;
+            let chaosActive = false;
+
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            function playGlitchBeep(freq = 400, type = 'sawtooth', duration = 0.04) {
+                if (!soundEnabled) return;
+                try {
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = chaosActive ? 'square' : type;
+                    osc.frequency.value = chaosActive ? freq + (Math.random() * 400 - 200) : freq;
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            function updateDisplay(expr, res = null) {
+                hideError();
+                historyExpression.textContent = expr || '';
+                if (res !== null && res !== undefined) {
+                    mainDisplay.textContent = res;
+                } else {
+                    mainDisplay.textContent = expr === '' ? '0' : expr;
+                }
+            }
+
+            function showError(msg) {
+                errorText.textContent = msg;
+                errorBanner.classList.remove('hidden');
+                playGlitchBeep(180, 'sawtooth', 0.1);
+            }
+
+            function hideError() {
+                errorBanner.classList.add('hidden');
+            }
+
+            function triggerVisualGlitch() {
+                calcCard.classList.add('glitching');
+                mainHeader.classList.add('glitching');
+                setTimeout(() => {
+                    calcCard.classList.remove('glitching');
+                    mainHeader.classList.remove('glitching');
+                }, 250);
+            }
+
+            chaosToggleBtn.addEventListener('click', () => {
+                chaosActive = !chaosActive;
+                playGlitchBeep(880, 'square', 0.1);
+                if (chaosActive) {
+                    chaosBtnText.textContent = 'CHAOS: ACTIVE';
+                    chaosToggleBtn.classList.add('bg-rose-500/20', 'text-rose-400', 'border-rose-500');
+                    triggerVisualGlitch();
+                } else {
+                    chaosBtnText.textContent = 'CHAOS: OFF';
+                    chaosToggleBtn.classList.remove('bg-rose-500/20', 'text-rose-400', 'border-rose-500');
+                }
+            });
+
+            document.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playGlitchBeep(550 + Math.random() * 150);
+                    if (chaosActive && Math.random() < 0.25) triggerVisualGlitch();
+
+                    const action = btn.getAttribute('data-action');
+                    const val = btn.getAttribute('data-val');
+
+                    if (action === 'number' || action === 'operator' || action === 'decimal' || action === 'func' || action === 'constant') {
+                        if (lastResult !== null && currentExpression === '' && action !== 'operator') {
+                            currentExpression = val;
+                            lastResult = null;
+                        } else {
+                            if (lastResult !== null && currentExpression === '' && action === 'operator') {
+                                currentExpression = lastResult.toString() + val;
+                                lastResult = null;
+                            } else {
+                                currentExpression += val;
+                            }
+                        }
+                        updateDisplay(currentExpression);
+                    } else if (action === 'clear') {
+                        currentExpression = '';
+                        lastResult = null;
+                        updateDisplay('', '0');
+                    } else if (action === 'delete') {
+                        if (currentExpression.length > 0) {
+                            currentExpression = currentExpression.slice(0, -1);
+                            updateDisplay(currentExpression);
+                        }
+                    } else if (action === 'equals') {
+                        calculate();
+                    }
+                });
+            });
+
+            document.getElementById('injectEntropyBtn').addEventListener('click', () => {
+                playGlitchBeep(300, 'square', 0.15);
+                triggerVisualGlitch();
+                const randomCorruptions = ['404 / 0', 'sin(NaN)', '666 * pi', '999999999999', 'sqrt(-666)'];
+                currentExpression = randomCorruptions[Math.floor(Math.random() * randomCorruptions.length)];
+                updateDisplay(currentExpression);
+            });
+
+            document.getElementById('voidBufferBtn').addEventListener('click', () => {
+                playGlitchBeep(120, 'sawtooth', 0.2);
+                triggerVisualGlitch();
+                currentExpression = '';
+                lastResult = null;
+                updateDisplay('', 'VOID_0x00');
+            });
+
+            function calculate() {
+                if (!currentExpression || currentExpression.trim() === '') return;
+                try {
+                    let exprToEval = currentExpression;
+                    if (chaosActive) {
+                        // Glitch calculator feature: randomly mutate operator or append error term
+                        if (Math.random() < 0.4) {
+                            exprToEval = exprToEval + ' + 0.0404';
+                        } else if (Math.random() < 0.3) {
+                            exprToEval = exprToEval.replace('+', '-');
+                        }
+                    }
+
+                    const result = calc.evaluate(exprToEval);
+                    
+                    let finalRes = result;
+                    if (chaosActive && Math.random() < 0.5) {
+                        finalRes = (result * (1 + (Math.random() * 0.1 - 0.05))).toFixed(4);
+                        triggerVisualGlitch();
+                    }
+
+                    lastResult = finalRes;
+                    updateDisplay(currentExpression + ' =', finalRes);
+                    currentExpression = '';
+                    renderHistory();
+                    playGlitchBeep(900, 'sine', 0.06);
+                } catch (err) {
+                    showError(err.message || 'SYSTEM FAULT');
+                    triggerVisualGlitch();
+                }
+            }
+
+            document.querySelectorAll('button[data-mem]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playGlitchBeep(600);
+                    const memOp = btn.getAttribute('data-mem');
+                    let currentVal = 0;
+                    try {
+                        currentVal = currentExpression ? calc.evaluate(currentExpression) : (lastResult !== null ? parseFloat(lastResult) : 0);
+                    } catch(e) {
+                        currentVal = 0;
+                    }
+
+                    if (memOp === 'MC') {
+                        calc.memoryClear();
+                        memIndicator.classList.add('hidden');
+                    } else if (memOp === 'MR') {
+                        currentExpression += calc.memoryRecall().toString();
+                        updateDisplay(currentExpression);
+                    } else if (memOp === 'M+') {
+                        calc.memoryAdd(currentVal);
+                        memIndicator.classList.remove('hidden');
+                    } else if (memOp === 'M-') {
+                        calc.memorySubtract(currentVal);
+                        memIndicator.classList.remove('hidden');
+                    } else if (memOp === 'MS') {
+                        calc.memoryStore(currentVal);
+                        memIndicator.classList.remove('hidden');
+                    }
+                });
+            });
+
+            angleModeBtn.addEventListener('click', () => {
+                playGlitchBeep(500);
+                const newMode = calc.toggleAngleMode();
+                angleModeBtn.textContent = newMode.toUpperCase();
+            });
+
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playGlitchBeep(550);
+                    modeBtns.forEach(b => {
+                        b.classList.remove('bg-[#45a29e]', 'text-[#0b0c10]');
+                        b.classList.add('text-[#c5c6c7]');
+                    });
+                    btn.classList.add('bg-[#45a29e]', 'text-[#0b0c10]');
+                    btn.classList.remove('text-[#c5c6c7]');
+
+                    const mode = btn.getAttribute('data-mode');
+                    standardKeypad.classList.add('hidden');
+                    scientificKeypad.classList.add('hidden');
+                    chaosKeypad.classList.add('hidden');
+
+                    if (mode === 'standard') standardKeypad.classList.remove('hidden');
+                    else if (mode === 'scientific') scientificKeypad.classList.remove('hidden');
+                    else if (mode === 'chaos') chaosKeypad.classList.remove('hidden');
+                });
+            });
+
+            function renderHistory() {
+                const history = calc.getHistory();
+                if (history.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="text-center text-[#c5c6c7]/60 text-xs py-12 flex flex-col items-center justify-center space-y-2">
+                            <i class="fa-solid fa-microchip text-2xl text-[#45a29e]"></i>
+                            <p class="tracking-widest">NO ANOMALIES RECORDED</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = '';
+                history.forEach((item) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-[#0b0c10]/70 hover:bg-[#0b0c10] p-2.5 rounded border border-[#45a29e]/40 transition cursor-pointer group';
+                    div.innerHTML = `
+                        <div class="text-xs text-[#c5c6c7] flex justify-between font-mono">
+                            <span>${item.expression}</span>
+                            <span class="text-[10px] text-[#45a29e]">${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</span>
+                        </div>
+                        <div class="text-sm font-bold text-[#66fcf1] display-font mt-0.5 flex justify-between items-center">
+                            <span>= ${item.result}</span>
+                            <i class="fa-solid fa-terminal text-[10px] text-[#45a29e]/50 group-hover:text-[#66fcf1] transition"></i>
+                        </div>
+                    `;
+                    div.addEventListener('click', () => {
+                        playGlitchBeep(700);
+                        currentExpression = item.result.toString();
+                        updateDisplay(currentExpression);
+                    });
+                    historyList.appendChild(div);
+                });
+            }
+
+            clearHistoryBtn.addEventListener('click', () => {
+                playGlitchBeep(350);
+                calc.clearHistory();
+                renderHistory();
+            });
+
+            soundToggleBtn.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                if (soundEnabled) {
+                    soundIcon.className = 'fa-solid fa-volume-high text-[#66fcf1]';
+                    playGlitchBeep(800);
+                } else {
+                    soundIcon.className = 'fa-solid fa-volume-xmark text-rose-400';
+                }
+            });
+
+            helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
+            closeHelpModal.addEventListener('click', () => helpModal.classList.add('hidden'));
+            closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
+
+            window.addEventListener('keydown', (e) => {
+                if (!helpModal.classList.contains('hidden') && e.key === 'Escape') {
+                    helpModal.classList.add('hidden');
+                    return;
+                }
+
+                if (/^[0-9]$/.test(e.key)) {
+                    currentExpression += e.key;
+                    updateDisplay(currentExpression);
+                    playGlitchBeep(600);
+                } else if (['+', '-', '*', '/', '%', '(', ')', '^'].includes(e.key)) {
+                    currentExpression += e.key;
+                    updateDisplay(currentExpression);
+                    playGlitchBeep(600);
+                } else if (e.key === '.') {
+                    currentExpression += '.';
+                    updateDisplay(currentExpression);
+                    playGlitchBeep(600);
+                } else if (e.key === 'Enter' || e.key === '=') {
+                    e.preventDefault();
+                    calculate();
+                } else if (e.key === 'Backspace') {
+                    if (currentExpression.length > 0) {
+                        currentExpression = currentExpression.slice(0, -1);
+                        updateDisplay(currentExpression);
+                        playGlitchBeep(500);
+                    }
+                } else if (e.key === 'Escape') {
+                    currentExpression = '';
+                    lastResult = null;
+                    updateDisplay('', '0');
+                    playGlitchBeep(400);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
